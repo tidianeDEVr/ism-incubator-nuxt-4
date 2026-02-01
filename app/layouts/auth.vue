@@ -19,7 +19,7 @@
       <div class="relative z-10 flex flex-col justify-center px-12 xl:px-16">
         <NuxtLink to="/" class="flex items-center gap-3 mb-12">
           <div class="bg-white px-2 pb-1 rounded">
-            <NuxtImg src="logo-long.jpg" class="w-[15rem]" />
+            <NuxtImg src="logo.webp" class="w-20" />
           </div>
         </NuxtLink>
 

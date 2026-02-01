@@ -5,6 +5,7 @@ Plateforme de gestion de hackathons pour l'Institut Superieur de Management (ISM
 ## Fonctionnalites
 
 ### Public
+
 - Page d'accueil presentant les hackathons
 - Liste des hackathons disponibles
 - Details des hackathons (reglement, prix, calendrier)
@@ -13,6 +14,7 @@ Plateforme de gestion de hackathons pour l'Institut Superieur de Management (ISM
 - Palmares et realisations
 
 ### Participant
+
 - Tableau de bord personnalise
 - Inscription aux hackathons
 - Soumission de projets
@@ -20,12 +22,14 @@ Plateforme de gestion de hackathons pour l'Institut Superieur de Management (ISM
 - Messagerie avec les mentors
 
 ### Mentor
+
 - Tableau de bord mentor
 - Liste des projets assignes
 - Accompagnement des equipes
 - Messagerie avec les participants
 
 ### Admin
+
 - Gestion des hackathons (CRUD)
 - Pipeline de validation des projets (Soumis → Evaluation → Accepte/Refuse)
 - Attribution des mentors aux projets
@@ -95,21 +99,21 @@ app/
 
 ## Pages Principales
 
-| Route | Description |
-|-------|-------------|
-| `/` | Page d'accueil |
-| `/hackathons` | Liste des hackathons |
-| `/hackathons/:slug` | Detail d'un hackathon |
-| `/login` | Connexion |
-| `/register` | Inscription |
-| `/admin` | Dashboard admin |
-| `/admin/hackathons` | Gestion des hackathons |
-| `/admin/projects` | Gestion des projets |
-| `/participant` | Dashboard participant |
-| `/participant/hackathons` | Hackathons du participant |
-| `/participant/projects` | Projets du participant |
-| `/mentor` | Dashboard mentor |
-| `/mentor/projects` | Projets assignes au mentor |
+| Route                     | Description                |
+| ------------------------- | -------------------------- |
+| `/`                       | Page d'accueil             |
+| `/hackathons`             | Liste des hackathons       |
+| `/hackathons/:slug`       | Detail d'un hackathon      |
+| `/login`                  | Connexion                  |
+| `/register`               | Inscription                |
+| `/admin`                  | Dashboard admin            |
+| `/admin/hackathons`       | Gestion des hackathons     |
+| `/admin/projects`         | Gestion des projets        |
+| `/participant`            | Dashboard participant      |
+| `/participant/hackathons` | Hackathons du participant  |
+| `/participant/projects`   | Projets du participant     |
+| `/mentor`                 | Dashboard mentor           |
+| `/mentor/projects`        | Projets assignes au mentor |
 
 ## Composants UI
 
@@ -128,7 +132,7 @@ Le projet inclut une bibliotheque de composants UI reutilisables:
 
 ## Contribution
 
-1. Creer une branche pour votre fonctionnalite
+1. Créer une branche pour votre fonctionnalite
 2. Commiter vos changements
 3. Ouvrir une Pull Request
 

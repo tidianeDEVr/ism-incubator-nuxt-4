@@ -4,6 +4,7 @@ const route = useRoute();
 const navigation = [
   { name: "Accueil", href: "/" },
   { name: "Hackathons", href: "/hackathons" },
+  { name: "Ressources", href: "/resources" },
   { name: "Realisations", href: "/achievements" },
   { name: "A propos", href: "/about" },
 ];
@@ -35,7 +36,7 @@ watch(
     <div class="container-padded">
       <div class="flex items-center justify-between h-16 lg:h-20">
         <NuxtLink to="/" class="flex items-center gap-3">
-          <NuxtImg src="logo-long.jpg" class="w-[12rem]" />
+          <NuxtImg src="logo.webp" class="w-20" />
         </NuxtLink>
 
         <nav class="hidden lg:flex items-center gap-1">

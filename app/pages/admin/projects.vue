@@ -13,6 +13,7 @@ useHead({
 // State
 const projects = ref<Project[]>([...mockProjects])
 const selectedHackathon = ref<string>("all")
+const selectedYear = ref<string>("all")
 const searchQuery = ref("")
 const viewMode = ref<"pipeline" | "table">("pipeline")
 const selectedProject = ref<Project | null>(null)
@@ -66,12 +67,37 @@ const statusConfig: Record<string, { label: string; variant: "default" | "info" 
   accepted: { label: "Accepte", variant: "success" },
 }
 
+const hackathonById = computed(() => {
+  const map = new Map<string, (typeof mockHackathons)[number]>()
+  mockHackathons.forEach(h => map.set(h.id, h))
+  return map
+})
+
+const availableYears = computed(() => {
+  const years = new Set<number>()
+  mockHackathons.forEach(h => {
+    const year = new Date(h.createdAt).getFullYear()
+    if (!Number.isNaN(year)) years.add(year)
+  })
+  return Array.from(years).sort((a, b) => b - a)
+})
+
 // Computed
 const filteredProjects = computed(() => {
   let result = projects.value.filter(p => p.status !== "draft")
 
   if (selectedHackathon.value !== "all") {
     result = result.filter(p => p.hackathonId === selectedHackathon.value)
+  }
+
+  if (selectedYear.value !== "all") {
+    const yearFilter = Number(selectedYear.value)
+    result = result.filter(p => {
+      const hackathon = hackathonById.value.get(p.hackathonId)
+      if (!hackathon) return false
+      const year = new Date(hackathon.createdAt).getFullYear()
+      return year === yearFilter
+    })
   }
 
   if (searchQuery.value) {
@@ -224,34 +250,36 @@ async function sendNotification() {
         </p>
       </div>
       <div class="flex items-center gap-2">
-        <button
-          :class="[
-            'p-2 rounded-lg transition-colors',
-            viewMode === 'pipeline'
-              ? 'bg-primary text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
-          ]"
-          title="Vue Pipeline"
-          @click="viewMode = 'pipeline'"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-          </svg>
-        </button>
-        <button
-          :class="[
-            'p-2 rounded-lg transition-colors',
-            viewMode === 'table'
-              ? 'bg-primary text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
-          ]"
-          title="Vue Tableau"
-          @click="viewMode = 'table'"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-          </svg>
-        </button>
+        <UiTooltip text="Vue Pipeline" position="left" :delay="100">
+          <button
+            :class="[
+              'p-2 rounded-lg transition-colors',
+              viewMode === 'pipeline'
+                ? 'bg-primary text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+            ]"
+            @click="viewMode = 'pipeline'"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+            </svg>
+          </button>
+        </UiTooltip>
+        <UiTooltip text="Vue Tableau" position="left" :delay="100">
+          <button
+            :class="[
+              'p-2 rounded-lg transition-colors',
+              viewMode === 'table'
+                ? 'bg-primary text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+            ]"
+            @click="viewMode = 'table'"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+          </button>
+        </UiTooltip>
       </div>
     </div>
 
@@ -303,6 +331,17 @@ async function sendNotification() {
             <option value="all">Tous les hackathons</option>
             <option v-for="hackathon in mockHackathons" :key="hackathon.id" :value="hackathon.id">
               {{ hackathon.title }}
+            </option>
+          </select>
+        </div>
+        <div class="sm:w-40">
+          <select
+            v-model="selectedYear"
+            class="w-full px-4 py-2.5 border border-neutral-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+          >
+            <option value="all">Toutes les annees</option>
+            <option v-for="year in availableYears" :key="year" :value="String(year)">
+              {{ year }}
             </option>
           </select>
         </div>
@@ -404,36 +443,47 @@ async function sendNotification() {
 
           <template #actions="{ item }">
             <div class="flex items-center gap-1">
-              <button
-                class="p-1.5 text-gray-400 hover:text-primary transition-colors"
-                title="Voir details"
-                @click="openProjectDetail(item)"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button
+              <UiTooltip text="Voir details" position="left" :delay="100">
+                <button
+                  class="p-1.5 text-gray-400 hover:text-primary transition-colors"
+                  @click="openProjectDetail(item)"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+              </UiTooltip>
+              <UiTooltip
                 v-if="item.status === 'submitted' || item.status === 'evaluation'"
-                class="p-1.5 text-gray-400 hover:text-green-600 transition-colors"
-                title="Accepter"
-                @click="acceptProject(item, true)"
+                text="Accepter"
+                position="left"
+                :delay="100"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-              </button>
-              <button
+                <button
+                  class="p-1.5 text-gray-400 hover:text-green-600 transition-colors"
+                  @click="acceptProject(item, true)"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </button>
+              </UiTooltip>
+              <UiTooltip
                 v-if="item.status === 'submitted' || item.status === 'evaluation'"
-                class="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
-                title="Refuser"
-                @click="rejectProject(item, true)"
+                text="Refuser"
+                position="left"
+                :delay="100"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+                <button
+                  class="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                  @click="rejectProject(item, true)"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </UiTooltip>
             </div>
           </template>
         </UiTable>

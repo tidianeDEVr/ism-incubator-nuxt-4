@@ -1,68 +1,79 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: 'auth',
-})
+  layout: "auth",
+});
 
 useHead({
-  title: 'Inscription - ISM Incubator',
-})
+  title: "Inscription - ISM Incubator",
+});
 
 const formData = reactive({
-  firstName: '',
-  lastName: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
+  firstName: "",
+  lastName: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
   acceptTerms: false,
-})
+});
 
-const isLoading = ref(false)
-const error = ref('')
+const isLoading = ref(false);
+const error = ref("");
 
 async function handleSubmit() {
-  error.value = ''
+  error.value = "";
 
   // Validation
-  if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
-    error.value = 'Veuillez remplir tous les champs obligatoires'
-    return
+  if (
+    !formData.firstName ||
+    !formData.lastName ||
+    !formData.email ||
+    !formData.password
+  ) {
+    error.value = "Veuillez remplir tous les champs obligatoires";
+    return;
   }
 
   if (formData.password !== formData.confirmPassword) {
-    error.value = 'Les mots de passe ne correspondent pas'
-    return
+    error.value = "Les mots de passe ne correspondent pas";
+    return;
   }
 
   if (formData.password.length < 8) {
-    error.value = 'Le mot de passe doit contenir au moins 8 caracteres'
-    return
+    error.value = "Le mot de passe doit contenir au moins 8 caracteres";
+    return;
   }
 
   if (!formData.acceptTerms) {
-    error.value = 'Veuillez accepter les conditions d\'utilisation'
-    return
+    error.value = "Veuillez accepter les conditions d'utilisation";
+    return;
   }
 
-  isLoading.value = true
+  isLoading.value = true;
 
   // Simulate registration
-  await new Promise(resolve => setTimeout(resolve, 1500))
+  await new Promise((resolve) => setTimeout(resolve, 1500));
 
   // Redirect to login
-  navigateTo('/login')
+  navigateTo("/login");
 
-  isLoading.value = false
+  isLoading.value = false;
 }
 </script>
 
 <template>
   <div>
-    <h1 class="text-display-sm text-primary mb-2">Creer un compte</h1>
+    <h1 class="text-display-sm text-primary mb-2">Créer un compte</h1>
     <p class="text-body text-gray-600 mb-8">
       Rejoignez la communaute ISM Incubator
     </p>
 
-    <UiAlert v-if="error" variant="error" class="mb-6" dismissible @dismiss="error = ''">
+    <UiAlert
+      v-if="error"
+      variant="error"
+      class="mb-6"
+      dismissible
+      @dismiss="error = ''"
+    >
       {{ error }}
     </UiAlert>
 
@@ -112,12 +123,16 @@ async function handleSubmit() {
           v-model="formData.acceptTerms"
           type="checkbox"
           class="w-4 h-4 mt-0.5 rounded border-gray-300 text-primary focus:ring-primary"
-        >
+        />
         <span class="text-body-sm text-gray-600">
           J'accepte les
-          <NuxtLink to="/terms" class="text-secondary hover:underline">conditions d'utilisation</NuxtLink>
+          <NuxtLink to="/terms" class="text-secondary hover:underline"
+            >conditions d'utilisation</NuxtLink
+          >
           et la
-          <NuxtLink to="/privacy" class="text-secondary hover:underline">politique de confidentialite</NuxtLink>
+          <NuxtLink to="/privacy" class="text-secondary hover:underline"
+            >politique de confidentialite</NuxtLink
+          >
         </span>
       </label>
 
@@ -128,14 +143,17 @@ async function handleSubmit() {
         full-width
         :loading="isLoading"
       >
-        Creer mon compte
+        Créer mon compte
       </UiButton>
     </form>
 
     <div class="mt-8 text-center">
       <p class="text-body-sm text-gray-600">
         Deja un compte ?
-        <NuxtLink to="/login" class="text-secondary font-medium hover:underline">
+        <NuxtLink
+          to="/login"
+          class="text-secondary font-medium hover:underline"
+        >
           Se connecter
         </NuxtLink>
       </p>

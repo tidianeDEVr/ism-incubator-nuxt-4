@@ -106,7 +106,7 @@ const stats = [
                 un accompagnement vers le financement.
               </p>
               <p>
-                Notre objectif est de creer un pont entre le monde academique et
+                Notre objectif est de Créer un pont entre le monde academique et
                 le monde des affaires, en preparant les entrepreneurs de demain
                 aux defis du marche africain et international.
               </p>

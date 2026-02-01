@@ -23,10 +23,13 @@ withDefaults(defineProps<Props>(), {
   hoverable: true,
 })
 
-defineSlots<{
+const slots = defineSlots<{
   [key: string]: (props: { item: any; index: number }) => any
-  actions?: (props: { item: any; index: number }) => any
 }>()
+
+function hasSlot(name: string): boolean {
+  return !!slots[name]
+}
 </script>
 
 <template>
@@ -83,9 +86,12 @@ defineSlots<{
             :key="column.key"
             :class="['py-3 px-4', column.class]"
           >
-            <slot :name="column.key" :item="item" :index="index">
+            <template v-if="hasSlot(column.key)">
+              <slot :name="column.key" :item="item" :index="index" />
+            </template>
+            <template v-else>
               {{ item[column.key] }}
-            </slot>
+            </template>
           </td>
         </tr>
       </tbody>

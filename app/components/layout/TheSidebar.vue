@@ -39,18 +39,7 @@ function isActive(href: string) {
       class="h-16 lg:h-20 flex items-center px-4 border-b border-neutral-border"
     >
       <NuxtLink to="/" class="flex items-center gap-3">
-        <!-- <div
-          class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0"
-        >
-          <span class="text-white font-bold text-lg">ISM</span>
-        </div>
-        <span
-          v-if="!collapsed"
-          class="text-primary font-semibold text-lg truncate"
-        >
-          Incubateur
-        </span> -->
-        <NuxtImg src="logo-long.jpg" class="w-50" />
+        <NuxtImg src="logo.webp" class="w-20" />
       </NuxtLink>
     </div>
 

@@ -29,6 +29,7 @@ const searchQuery = ref("");
 const filterStatus = ref<ProjectStatus | "all">("all");
 const showAssignMentorModal = ref(false);
 const showRankingModal = ref(false);
+const showProjectDetailModal = ref(false);
 const selectedProject = ref<Project | null>(null);
 const selectedMentorId = ref<string>("");
 
@@ -139,6 +140,11 @@ function getMentorById(mentorId?: string): Mentor | undefined {
 }
 
 // Actions
+function openProjectDetail(project: Project) {
+  selectedProject.value = project;
+  showProjectDetailModal.value = true;
+}
+
 function openAssignMentorModal(project: Project) {
   selectedProject.value = project;
   selectedMentorId.value = project.assignedMentorId || "";
@@ -152,7 +158,7 @@ function assignMentor() {
     );
     if (projectIndex !== -1) {
       hackathonProjects.value[projectIndex] = {
-        ...hackathonProjects.value[projectIndex],
+        ...hackathonProjects.value[projectIndex]!,
         assignedMentorId: selectedMentorId.value || undefined,
       };
     }
@@ -166,17 +172,49 @@ function updateProjectStatus(project: Project, newStatus: ProjectStatus) {
   );
   if (projectIndex !== -1) {
     hackathonProjects.value[projectIndex] = {
-      ...hackathonProjects.value[projectIndex],
+      ...hackathonProjects.value[projectIndex]!,
       status: newStatus,
     };
   }
 }
 
 function setAsWinner(project: Project, position: number) {
-  // Remove winner status from other projects with same position
-  hackathonProjects.value.forEach((p, index) => {
-    if (p.status === "winner" && p.id !== project.id) {
-      // Check if this project has the same position (we'd need to track positions)
+  // Find next available position
+  const existingPositions = hackathonProjects.value
+    .filter((p) => p.status === "winner" && p.winnerPosition)
+    .map((p) => p.winnerPosition as number);
+
+  const nextPosition =
+    existingPositions.length > 0 ? Math.max(...existingPositions) + 1 : 1;
+
+  const projectIndex = hackathonProjects.value.findIndex(
+    (p) => p.id === project.id,
+  );
+  if (projectIndex !== -1) {
+    hackathonProjects.value[projectIndex] = {
+      ...hackathonProjects.value[projectIndex]!,
+      status: "winner",
+      winnerPosition: nextPosition,
+      showInSuccessStories: true,
+    };
+  }
+}
+
+function updateWinnerPosition(project: Project, newPosition: number) {
+  const winners = hackathonProjects.value.filter(
+    (p) => p.status === "winner" && p.id !== project.id,
+  );
+
+  // Shift other winners if needed
+  winners.forEach((w) => {
+    if (w.winnerPosition && w.winnerPosition >= newPosition) {
+      const idx = hackathonProjects.value.findIndex((p) => p.id === w.id);
+      if (idx !== -1) {
+        hackathonProjects.value[idx] = {
+          ...hackathonProjects.value[idx]!,
+          winnerPosition: (w.winnerPosition || 0) + 1,
+        };
+      }
     }
   });
 
@@ -185,9 +223,122 @@ function setAsWinner(project: Project, position: number) {
   );
   if (projectIndex !== -1) {
     hackathonProjects.value[projectIndex] = {
-      ...hackathonProjects.value[projectIndex],
-      status: "winner",
+      ...hackathonProjects.value[projectIndex]!,
+      winnerPosition: newPosition,
     };
+  }
+}
+
+function moveWinnerUp(project: Project) {
+  if (!project.winnerPosition || project.winnerPosition <= 1) return;
+
+  const targetPosition = project.winnerPosition - 1;
+  const projectToSwap = hackathonProjects.value.find(
+    (p) => p.status === "winner" && p.winnerPosition === targetPosition,
+  );
+
+  if (projectToSwap) {
+    const swapIndex = hackathonProjects.value.findIndex(
+      (p) => p.id === projectToSwap.id,
+    );
+    if (swapIndex !== -1) {
+      hackathonProjects.value[swapIndex] = {
+        ...hackathonProjects.value[swapIndex]!,
+        winnerPosition: project.winnerPosition,
+      };
+    }
+  }
+
+  const projectIndex = hackathonProjects.value.findIndex(
+    (p) => p.id === project.id,
+  );
+  if (projectIndex !== -1) {
+    hackathonProjects.value[projectIndex] = {
+      ...hackathonProjects.value[projectIndex]!,
+      winnerPosition: targetPosition,
+    };
+  }
+}
+
+function moveWinnerDown(project: Project) {
+  const maxPosition = Math.max(
+    ...hackathonProjects.value
+      .filter((p) => p.status === "winner")
+      .map((p) => p.winnerPosition || 0),
+  );
+
+  if (!project.winnerPosition || project.winnerPosition >= maxPosition) return;
+
+  const targetPosition = project.winnerPosition + 1;
+  const projectToSwap = hackathonProjects.value.find(
+    (p) => p.status === "winner" && p.winnerPosition === targetPosition,
+  );
+
+  if (projectToSwap) {
+    const swapIndex = hackathonProjects.value.findIndex(
+      (p) => p.id === projectToSwap.id,
+    );
+    if (swapIndex !== -1) {
+      hackathonProjects.value[swapIndex] = {
+        ...hackathonProjects.value[swapIndex]!,
+        winnerPosition: project.winnerPosition,
+      };
+    }
+  }
+
+  const projectIndex = hackathonProjects.value.findIndex(
+    (p) => p.id === project.id,
+  );
+  if (projectIndex !== -1) {
+    hackathonProjects.value[projectIndex] = {
+      ...hackathonProjects.value[projectIndex]!,
+      winnerPosition: targetPosition,
+    };
+  }
+}
+
+function toggleSuccessStories(project: Project) {
+  const projectIndex = hackathonProjects.value.findIndex(
+    (p) => p.id === project.id,
+  );
+  if (projectIndex !== -1) {
+    hackathonProjects.value[projectIndex] = {
+      ...hackathonProjects.value[projectIndex]!,
+      showInSuccessStories:
+        !hackathonProjects.value[projectIndex]!.showInSuccessStories,
+    };
+  }
+}
+
+function removeFromWinners(project: Project) {
+  const removedPosition = project.winnerPosition;
+
+  const projectIndex = hackathonProjects.value.findIndex(
+    (p) => p.id === project.id,
+  );
+  if (projectIndex !== -1) {
+    hackathonProjects.value[projectIndex] = {
+      ...hackathonProjects.value[projectIndex]!,
+      status: "finalist",
+      winnerPosition: undefined,
+      showInSuccessStories: undefined,
+    };
+  }
+
+  // Reorder remaining winners
+  if (removedPosition) {
+    hackathonProjects.value.forEach((p, idx) => {
+      if (
+        p.status === "winner" &&
+        p.winnerPosition &&
+        p.winnerPosition > removedPosition
+      ) {
+        hackathonProjects.value[idx] = {
+          ...hackathonProjects.value[idx]!,
+          winnerPosition: p.winnerPosition - 1,
+        };
+      }
+    });
   }
 }
 
@@ -206,8 +357,26 @@ const rankedProjects = computed(() => {
     .sort((a, b) => {
       if (a.status === "winner" && b.status !== "winner") return -1;
       if (b.status === "winner" && a.status !== "winner") return 1;
+      // Sort winners by position
+      if (a.status === "winner" && b.status === "winner") {
+        return (a.winnerPosition || 999) - (b.winnerPosition || 999);
+      }
       return 0;
     });
+});
+
+// Sorted winners by position
+const sortedWinners = computed(() => {
+  return hackathonProjects.value
+    .filter((p) => p.status === "winner")
+    .sort((a, b) => (a.winnerPosition || 999) - (b.winnerPosition || 999));
+});
+
+// Count of winners visible in Success Stories
+const successStoriesCount = computed(() => {
+  return hackathonProjects.value.filter(
+    (p) => p.status === "winner" && p.showInSuccessStories,
+  ).length;
 });
 </script>
 
@@ -537,92 +706,104 @@ const rankedProjects = computed(() => {
             <div
               class="flex items-center gap-2 lg:border-l lg:border-neutral-border lg:pl-4"
             >
-              <button
-                class="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-primary/10 transition-colors"
-                title="Assigner un mentor"
-                @click="openAssignMentorModal(project)"
-              >
-                <svg
-                  class="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <UiTooltip text="Assigner un mentor" position="left" :delay="100">
+                <button
+                  class="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-primary/10 transition-colors"
+                  @click="openAssignMentorModal(project)"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </button>
-              <button
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                </button>
+              </UiTooltip>
+              <UiTooltip
                 v-if="
                   project.status !== 'finalist' && project.status !== 'winner'
                 "
-                class="p-2 rounded-lg text-gray-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
-                title="Promouvoir finaliste"
-                @click="promoteToFinalist(project)"
+                text="Promouvoir finaliste"
+                position="left"
+                :delay="100"
               >
-                <svg
-                  class="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                <button
+                  class="p-2 rounded-lg text-gray-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                  @click="promoteToFinalist(project)"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 10l7-7m0 0l7 7m-7-7v18"
-                  />
-                </svg>
-              </button>
-              <button
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M5 10l7-7m0 0l7 7m-7-7v18"
+                    />
+                  </svg>
+                </button>
+              </UiTooltip>
+              <UiTooltip
                 v-if="project.status === 'finalist'"
-                class="p-2 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
-                title="Definir comme gagnant"
-                @click="setAsWinner(project, 1)"
+                text="Definir comme gagnant"
+                position="left"
+                :delay="100"
               >
-                <svg
-                  class="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                <button
+                  class="p-2 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                  @click="setAsWinner(project, 1)"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                  />
-                </svg>
-              </button>
-              <NuxtLink
-                :to="`/admin/projects?id=${project.id}`"
-                class="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                title="Voir les details"
-              >
-                <svg
-                  class="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                    />
+                  </svg>
+                </button>
+              </UiTooltip>
+              <UiTooltip text="Voir les details" position="left" :delay="100">
+                <button
+                  class="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  @click="openProjectDetail(project)"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  />
-                </svg>
-              </NuxtLink>
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                </button>
+              </UiTooltip>
             </div>
           </div>
         </UiCard>
@@ -649,14 +830,17 @@ const rankedProjects = computed(() => {
     <div v-if="activeTab === 'ranking'">
       <UiCard>
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-heading-sm text-primary">Classement Final</h2>
-          <p class="text-body-sm text-gray-500">
-            {{ rankedProjects.length }} projet(s) classe(s)
-          </p>
+          <div>
+            <h2 class="text-heading-sm text-primary">Classement Final</h2>
+            <p class="text-body-sm text-gray-500 mt-1">
+              {{ rankedProjects.length }} projet(s) classe(s) ·
+              {{ successStoriesCount }} visible(s) dans Success Stories
+            </p>
+          </div>
         </div>
 
         <div v-if="rankedProjects.length > 0" class="space-y-4">
-          <div v-if="projectsByStatus.winner.length > 0">
+          <div v-if="sortedWinners.length > 0">
             <h3
               class="text-body-sm font-semibold text-gray-700 mb-3 flex items-center gap-2"
             >
@@ -670,25 +854,79 @@ const rankedProjects = computed(() => {
                 />
               </svg>
               Gagnants
+              <span class="text-caption text-gray-400 font-normal ml-2">
+                (Utilisez les fleches pour reordonner)
+              </span>
             </h3>
             <div class="space-y-3">
               <div
-                v-for="(project, index) in projectsByStatus.winner"
+                v-for="project in sortedWinners"
                 :key="project.id"
                 class="flex items-center gap-4 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl"
               >
+                <!-- Position badge -->
                 <div
                   class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
                   :class="
-                    index === 0
+                    project.winnerPosition === 1
                       ? 'bg-yellow-500'
-                      : index === 1
+                      : project.winnerPosition === 2
                         ? 'bg-gray-400'
                         : 'bg-amber-600'
                   "
                 >
-                  {{ index + 1 }}
+                  {{ project.winnerPosition || "?" }}
                 </div>
+
+                <!-- Move up/down buttons -->
+                <div class="flex flex-col gap-1">
+                  <UiTooltip text="Monter" position="left" :delay="100">
+                    <button
+                      class="p-1 rounded text-gray-400 hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      :disabled="project.winnerPosition === 1"
+                      @click="moveWinnerUp(project)"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 15l7-7 7 7"
+                        />
+                      </svg>
+                    </button>
+                  </UiTooltip>
+                  <UiTooltip text="Descendre" position="left" :delay="100">
+                    <button
+                      class="p-1 rounded text-gray-400 hover:text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      :disabled="
+                        project.winnerPosition === sortedWinners.length
+                      "
+                      @click="moveWinnerDown(project)"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
+                  </UiTooltip>
+                </div>
+
+                <!-- Project info -->
                 <div class="flex-1">
                   <h4 class="text-body font-semibold text-gray-900">
                     {{ project.title }}
@@ -697,33 +935,76 @@ const rankedProjects = computed(() => {
                     {{ project.members.map((m) => m.name).join(", ") }}
                   </p>
                 </div>
-                <div v-if="hackathon?.prizes[index]" class="text-right">
+
+                <!-- Prize info -->
+                <div
+                  v-if="hackathon?.prizes[(project.winnerPosition || 1) - 1]"
+                  class="text-right"
+                >
                   <p class="text-body-sm font-medium text-gray-900">
-                    {{ hackathon.prizes[index].title }}
+                    {{
+                      hackathon.prizes[(project.winnerPosition || 1) - 1]?.title
+                    }}
                   </p>
                   <p class="text-caption text-secondary">
-                    {{ hackathon.prizes[index].value }}
+                    {{
+                      hackathon.prizes[(project.winnerPosition || 1) - 1]?.value
+                    }}
                   </p>
                 </div>
-                <button
-                  class="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                  title="Retirer du classement"
-                  @click="updateProjectStatus(project, 'finalist')"
+
+                <!-- Success Stories toggle -->
+                <div
+                  class="flex flex-col items-center gap-1 px-3 border-l border-yellow-200"
                 >
-                  <svg
-                    class="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                  <span class="text-caption text-gray-500"
+                    >Success Stories</span
                   >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  <button
+                    :class="[
+                      'relative w-10 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary',
+                      project.showInSuccessStories
+                        ? 'bg-green-500'
+                        : 'bg-gray-300',
+                    ]"
+                    @click="toggleSuccessStories(project)"
+                  >
+                    <span
+                      :class="[
+                        'absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform',
+                        project.showInSuccessStories
+                          ? 'translate-x-4'
+                          : 'translate-x-0',
+                      ]"
                     />
-                  </svg>
-                </button>
+                  </button>
+                </div>
+
+                <!-- Remove button -->
+                <UiTooltip
+                  text="Retirer du classement"
+                  position="left"
+                  :delay="100"
+                >
+                  <button
+                    class="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                    @click="removeFromWinners(project)"
+                  >
+                    <svg
+                      class="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                </UiTooltip>
               </div>
             </div>
           </div>
@@ -752,46 +1033,56 @@ const rankedProjects = computed(() => {
                   </p>
                 </div>
                 <div class="flex items-center gap-2">
-                  <button
-                    class="p-2 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
-                    title="Promouvoir gagnant"
-                    @click="
-                      setAsWinner(project, projectsByStatus.winner.length + 1)
-                    "
+                  <UiTooltip
+                    text="Promouvoir gagnant"
+                    position="left"
+                    :delay="100"
                   >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                    <button
+                      class="p-2 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                      @click="
+                        setAsWinner(project, projectsByStatus.winner.length + 1)
+                      "
                     >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    class="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                    title="Retirer des finalistes"
-                    @click="removeFromFinalists(project)"
+                      <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                        />
+                      </svg>
+                    </button>
+                  </UiTooltip>
+                  <UiTooltip
+                    text="Retirer des finalistes"
+                    position="left"
+                    :delay="100"
                   >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                    <button
+                      class="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                      @click="removeFromFinalists(project)"
                     >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
+                      <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </UiTooltip>
                 </div>
               </div>
             </div>
@@ -900,6 +1191,328 @@ const rankedProjects = computed(() => {
         <UiButton @click="assignMentor">
           {{ selectedMentorId ? "Assigner" : "Retirer le mentor" }}
         </UiButton>
+      </template>
+    </UiModal>
+
+    <!-- Project Detail Modal -->
+    <UiModal
+      v-model="showProjectDetailModal"
+      :title="selectedProject?.title || 'Detail du projet'"
+      size="lg"
+    >
+      <template v-if="selectedProject">
+        <div class="space-y-6">
+          <!-- Header Info -->
+          <div
+            class="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-neutral-border"
+          >
+            <div>
+              <p class="text-body-sm text-secondary font-medium mb-1">
+                {{ hackathon?.title }}
+              </p>
+              <p class="text-caption text-gray-500">
+                Soumis le
+                {{
+                  formatDate(
+                    selectedProject.submittedAt || selectedProject.createdAt,
+                  )
+                }}
+              </p>
+            </div>
+            <UiBadge
+              :variant="
+                statusConfig[selectedProject.status]?.variant || 'default'
+              "
+              size="md"
+            >
+              {{
+                statusConfig[selectedProject.status]?.label ||
+                selectedProject.status
+              }}
+            </UiBadge>
+          </div>
+
+          <!-- Project Info -->
+          <div>
+            <h4 class="text-body-sm font-semibold text-gray-900 mb-2">
+              Description
+            </h4>
+            <p class="text-body-sm text-gray-600">
+              {{ selectedProject.description }}
+            </p>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-6">
+            <div>
+              <h4 class="text-body-sm font-semibold text-gray-900 mb-2">
+                Probleme
+              </h4>
+              <p class="text-body-sm text-gray-600">
+                {{ selectedProject.problemStatement }}
+              </p>
+            </div>
+            <div>
+              <h4 class="text-body-sm font-semibold text-gray-900 mb-2">
+                Solution
+              </h4>
+              <p class="text-body-sm text-gray-600">
+                {{ selectedProject.solution }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Tech Stack -->
+          <div>
+            <h4 class="text-body-sm font-semibold text-gray-900 mb-2">
+              Technologies
+            </h4>
+            <div class="flex flex-wrap gap-2">
+              <UiBadge
+                v-for="tech in selectedProject.techStack"
+                :key="tech"
+                variant="default"
+                size="sm"
+              >
+                {{ tech }}
+              </UiBadge>
+            </div>
+          </div>
+
+          <!-- Team -->
+          <div>
+            <h4 class="text-body-sm font-semibold text-gray-900 mb-2">
+              Equipe ({{ selectedProject.members.length }} membres)
+            </h4>
+            <div class="grid sm:grid-cols-2 gap-2">
+              <div
+                v-for="member in selectedProject.members"
+                :key="member.userId"
+                class="flex items-center gap-3 p-2 rounded-lg bg-gray-50"
+              >
+                <UiAvatar :name="member.name" size="sm" />
+                <div class="min-w-0">
+                  <div class="text-body-sm font-medium text-gray-900 truncate">
+                    {{ member.name }}
+                    <UiBadge
+                      v-if="member.isLead"
+                      variant="secondary"
+                      size="sm"
+                      class="ml-1"
+                      >Lead</UiBadge
+                    >
+                  </div>
+                  <div class="text-caption text-gray-500">
+                    {{ member.role }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Links -->
+          <div
+            v-if="
+              selectedProject.pitchDeckUrl ||
+              selectedProject.demoVideoUrl ||
+              selectedProject.sourceCodeUrl
+            "
+          >
+            <h4 class="text-body-sm font-semibold text-gray-900 mb-2">
+              Ressources
+            </h4>
+            <div class="flex flex-wrap gap-2">
+              <a
+                v-if="selectedProject.pitchDeckUrl"
+                :href="selectedProject.pitchDeckUrl"
+                target="_blank"
+                class="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-body-sm text-gray-700 transition-colors"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                Pitch Deck
+              </a>
+              <a
+                v-if="selectedProject.demoVideoUrl"
+                :href="selectedProject.demoVideoUrl"
+                target="_blank"
+                class="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-body-sm text-gray-700 transition-colors"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Video Demo
+              </a>
+              <a
+                v-if="selectedProject.sourceCodeUrl"
+                :href="selectedProject.sourceCodeUrl"
+                target="_blank"
+                class="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-body-sm text-gray-700 transition-colors"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                  />
+                </svg>
+                Code Source
+              </a>
+            </div>
+          </div>
+
+          <!-- Mentor -->
+          <div class="pt-4 border-t border-neutral-border">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-body-sm font-semibold text-gray-900 mb-1">
+                  Mentor assigne
+                </h4>
+                <div class="flex items-center gap-2">
+                  <UiAvatar
+                    v-if="selectedProject.assignedMentorId"
+                    :name="
+                      getMentorById(selectedProject.assignedMentorId)?.name ||
+                      ''
+                    "
+                    size="sm"
+                  />
+                  <span class="text-body-sm text-gray-600">
+                    {{
+                      getMentorById(selectedProject.assignedMentorId)?.name ||
+                      "Non assigne"
+                    }}
+                  </span>
+                </div>
+              </div>
+              <UiButton
+                variant="outline"
+                size="sm"
+                @click="
+                  showProjectDetailModal = false;
+                  openAssignMentorModal(selectedProject);
+                "
+              >
+                {{ selectedProject.assignedMentorId ? "Changer" : "Assigner" }}
+              </UiButton>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <template #footer>
+        <UiButton variant="ghost" @click="showProjectDetailModal = false"
+          >Fermer</UiButton
+        >
+        <div class="flex-1" />
+        <template
+          v-if="
+            selectedProject?.status === 'submitted' ||
+            selectedProject?.status === 'evaluation'
+          "
+        >
+          <UiButton
+            variant="outline"
+            class="text-red-600 border-red-200 hover:bg-red-50"
+            @click="
+              updateProjectStatus(selectedProject!, 'rejected');
+              showProjectDetailModal = false;
+            "
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+            Refuser
+          </UiButton>
+          <UiButton
+            class="bg-green-600 hover:bg-green-700"
+            @click="
+              updateProjectStatus(selectedProject!, 'finalist');
+              showProjectDetailModal = false;
+            "
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            Accepter
+          </UiButton>
+        </template>
+        <template v-else-if="selectedProject?.status === 'finalist'">
+          <UiButton
+            class="bg-yellow-500 hover:bg-yellow-600"
+            @click="
+              setAsWinner(selectedProject!, 1);
+              showProjectDetailModal = false;
+            "
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+              />
+            </svg>
+            Definir gagnant
+          </UiButton>
+        </template>
       </template>
     </UiModal>
   </div>

@@ -9,7 +9,7 @@ export const mockHackathons: Hackathon[] = [
       "Le plus grand hackathon de l'ISM reunissant les meilleurs talents pour resoudre des defis reels. Rejoignez-nous pour 48 heures d'innovation intense, de mentorat et de collaboration.",
     shortDescription:
       "Construisez des solutions innovantes pour les defis de demain",
-    coverImage: "p1.jpg",
+    coverImage: "/p1.jpg",
     status: "active",
     category: "Innovation",
     registrationStart: "2026-01-01",
@@ -85,7 +85,7 @@ export const mockHackathons: Hackathon[] = [
     description:
       "Un hackathon dedie aux solutions financieres innovantes pour l'Afrique. Developpez des applications qui revolutionnent l'acces aux services financiers.",
     shortDescription: "Revolutionnez la finance en Afrique",
-    coverImage: "p2.jpg",
+    coverImage: "/p2.jpg",
     status: "upcoming",
     category: "FinTech",
     registrationStart: "2026-02-15",
@@ -147,7 +147,7 @@ export const mockHackathons: Hackathon[] = [
     description:
       "Creez des solutions technologiques pour un avenir durable. Agriculture, energie renouvelable, gestion des dechets - relevez les defis environnementaux africains.",
     shortDescription: "Technologies vertes pour un avenir durable",
-    coverImage: "p3.jpg",
+    coverImage: "/p3.jpg",
     status: "upcoming",
     category: "GreenTech",
     registrationStart: "2026-04-01",

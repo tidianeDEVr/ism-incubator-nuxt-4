@@ -83,6 +83,9 @@ export interface Project {
   submittedAt?: string
   createdAt: string
   updatedAt: string
+  // Winner ranking fields
+  winnerPosition?: number
+  showInSuccessStories?: boolean
 }
 
 // Achievement type for past projects

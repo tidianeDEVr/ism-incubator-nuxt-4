@@ -15,6 +15,8 @@ useHead({
     <HeroSection />
     <WhySection />
     <HackathonListing />
+    <ImmersiveGameSection />
+    <ResourcesSection />
     <AchievementsSection />
     <CTASection />
   </div>

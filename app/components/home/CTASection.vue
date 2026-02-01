@@ -21,7 +21,7 @@
           </p>
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <UiButton variant="secondary" size="lg" href="/register">
-              Creer mon compte
+              Créer mon compte
             </UiButton>
             <UiButton
               variant="ghost"

@@ -1,41 +1,41 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: 'auth',
-})
+  layout: "auth",
+});
 
 useHead({
-  title: 'Connexion - ISM Incubator',
-})
+  title: "Connexion - ISM Incubator",
+});
 
-const email = ref('')
-const password = ref('')
-const isLoading = ref(false)
-const error = ref('')
+const email = ref("");
+const password = ref("");
+const isLoading = ref(false);
+const error = ref("");
 
 async function handleSubmit() {
-  error.value = ''
-  isLoading.value = true
+  error.value = "";
+  isLoading.value = true;
 
   // Simulate login
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Mock validation
   if (!email.value || !password.value) {
-    error.value = 'Veuillez remplir tous les champs'
-    isLoading.value = false
-    return
+    error.value = "Veuillez remplir tous les champs";
+    isLoading.value = false;
+    return;
   }
 
   // Redirect based on mock user (for demo purposes)
-  if (email.value.includes('admin')) {
-    navigateTo('/admin')
-  } else if (email.value.includes('mentor')) {
-    navigateTo('/mentor')
+  if (email.value.includes("admin")) {
+    navigateTo("/admin");
+  } else if (email.value.includes("mentor")) {
+    navigateTo("/mentor");
   } else {
-    navigateTo('/participant')
+    navigateTo("/participant");
   }
 
-  isLoading.value = false
+  isLoading.value = false;
 }
 </script>
 
@@ -46,7 +46,13 @@ async function handleSubmit() {
       Connectez-vous pour acceder a votre espace
     </p>
 
-    <UiAlert v-if="error" variant="error" class="mb-6" dismissible @dismiss="error = ''">
+    <UiAlert
+      v-if="error"
+      variant="error"
+      class="mb-6"
+      dismissible
+      @dismiss="error = ''"
+    >
       {{ error }}
     </UiAlert>
 
@@ -69,10 +75,16 @@ async function handleSubmit() {
 
       <div class="flex items-center justify-between">
         <label class="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary">
+          <input
+            type="checkbox"
+            class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+          />
           <span class="text-body-sm text-gray-600">Se souvenir de moi</span>
         </label>
-        <NuxtLink to="/forgot-password" class="text-body-sm text-secondary hover:underline">
+        <NuxtLink
+          to="/forgot-password"
+          class="text-body-sm text-secondary hover:underline"
+        >
           Mot de passe oublie ?
         </NuxtLink>
       </div>
@@ -91,8 +103,11 @@ async function handleSubmit() {
     <div class="mt-8 text-center">
       <p class="text-body-sm text-gray-600">
         Pas encore de compte ?
-        <NuxtLink to="/register" class="text-secondary font-medium hover:underline">
-          Creer un compte
+        <NuxtLink
+          to="/register"
+          class="text-secondary font-medium hover:underline"
+        >
+          Créer un compte
         </NuxtLink>
       </p>
     </div>

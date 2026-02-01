@@ -210,7 +210,7 @@ const canRegister = computed(() => {
                   <div class="flex flex-col items-center">
                     <div
                       :class="[
-                        'w-10 h-10 rounded-full flex items-center justify-center text-body font-semibold',
+                        'w-10 h-10 min-w-10 min-h-10 shrink-0 rounded-full flex items-center justify-center text-body font-semibold leading-none',
                         index === 0
                           ? 'bg-secondary text-white'
                           : 'bg-gray-100 text-gray-600',
@@ -295,6 +295,7 @@ const canRegister = computed(() => {
           </div>
 
           <div class="space-y-6">
+            <NuxtImg :src="hackathon.coverImage" class="w-full rounded-lg" />
             <UiCard>
               <h3 class="text-heading-sm text-primary mb-4">Dates cles</h3>
               <div class="space-y-4">

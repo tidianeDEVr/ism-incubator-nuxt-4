@@ -21,7 +21,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const inputId = computed(() => props.id || `textarea-${Math.random().toString(36).slice(2, 9)}`)
+const autoId = useId()
+const inputId = computed(() => props.id || `textarea-${autoId}`)
 
 const textareaClasses = computed(() => [
   'w-full px-4 py-2.5 text-body rounded-lg border transition-colors duration-200 resize-none',
