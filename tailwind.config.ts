@@ -1,0 +1,107 @@
+import type { Config } from 'tailwindcss'
+
+export default {
+  content: [
+    './app/components/**/*.{vue,js,ts}',
+    './app/layouts/**/*.vue',
+    './app/pages/**/*.vue',
+    './app/plugins/**/*.{js,ts}',
+    './app/app.vue',
+    './app/error.vue',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: '#442A1C',
+          50: '#F5F0ED',
+          100: '#E8DED8',
+          200: '#D1BDB1',
+          300: '#BA9C8A',
+          400: '#A37B63',
+          500: '#6B4530',
+          600: '#5A3A28',
+          700: '#442A1C',
+          800: '#2D1C12',
+          900: '#160E09',
+        },
+        secondary: {
+          DEFAULT: '#F19121',
+          50: '#FEF5E7',
+          100: '#FDEBD0',
+          200: '#FBD7A1',
+          300: '#F9C372',
+          400: '#F7AF43',
+          500: '#F19121',
+          600: '#C1741A',
+          700: '#915714',
+          800: '#613A0D',
+          900: '#301D07',
+        },
+        neutral: {
+          white: '#FFFFFF',
+          background: '#FAFAFA',
+          border: '#E2E2E2',
+          divider: '#F0F0F0',
+        },
+        status: {
+          success: '#22C55E',
+          warning: '#F59E0B',
+          error: '#EF4444',
+          info: '#3B82F6',
+        },
+        pipeline: {
+          submitted: '#6B7280',
+          evaluation: '#3B82F6',
+          finalist: '#8B5CF6',
+          winner: '#22C55E',
+        },
+      },
+      fontFamily: {
+        sans: ['Montserrat', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        'display-lg': ['3.5rem', { lineHeight: '1.1', fontWeight: '700' }],
+        'display': ['3rem', { lineHeight: '1.15', fontWeight: '700' }],
+        'display-sm': ['2.25rem', { lineHeight: '1.2', fontWeight: '600' }],
+        'heading-lg': ['1.875rem', { lineHeight: '1.25', fontWeight: '600' }],
+        'heading': ['1.5rem', { lineHeight: '1.3', fontWeight: '600' }],
+        'heading-sm': ['1.25rem', { lineHeight: '1.35', fontWeight: '600' }],
+        'body-lg': ['1.125rem', { lineHeight: '1.6', fontWeight: '400' }],
+        'body': ['1rem', { lineHeight: '1.6', fontWeight: '400' }],
+        'body-sm': ['0.875rem', { lineHeight: '1.5', fontWeight: '400' }],
+        'caption': ['0.75rem', { lineHeight: '1.4', fontWeight: '400' }],
+      },
+      spacing: {
+        '4.5': '1.125rem',
+        '13': '3.25rem',
+        '15': '3.75rem',
+        '18': '4.5rem',
+      },
+      borderRadius: {
+        DEFAULT: '0.5rem',
+        lg: '0.75rem',
+        xl: '1rem',
+      },
+      boxShadow: {
+        card: '0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06)',
+        'card-hover': '0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)',
+        modal: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        dropdown: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+      },
+      screens: {
+        xs: '320px',
+        sm: '640px',
+        md: '768px',
+        lg: '1024px',
+        xl: '1280px',
+        '2xl': '1440px',
+      },
+      maxWidth: {
+        container: '1440px',
+        content: '1200px',
+      },
+    },
+  },
+  plugins: [],
+} satisfies Config
