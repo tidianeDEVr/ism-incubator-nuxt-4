@@ -109,25 +109,10 @@ function getPositionColor(position: number) {
             <div
               class="relative h-48 bg-gradient-to-br from-secondary/20 to-primary/20"
             >
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div
-                  class="w-20 h-20 rounded-2xl bg-white shadow-card flex items-center justify-center"
-                >
-                  <svg
-                    class="w-10 h-10 text-secondary"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                    />
-                  </svg>
-                </div>
-              </div>
+              <div
+                class="absolute inset-0 bg-cover bg-top bg-no-repeat"
+                :style="{ backgroundImage: `url(${achievement.image})` }"
+              />
 
               <div class="absolute top-4 left-4 flex gap-2">
                 <span
